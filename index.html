@@ -3,292 +3,502 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roblox Lua Obfuscator</title>
+<title>Roblox Lua Obfuscator PRO</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --bg:#0d0d1a;--panel:#12122a;--border:#2a2a5a;
-    --purple:#7c3aed;--blue:#2563eb;--accent:#a855f7;
-    --text:#e2e8f0;--muted:#64748b;--success:#22c55e;--error:#ef4444
+    --bg:#090914;--panel:#12122a;--border:#2a2a5a;
+    --purple:#8b5cf6;--blue:#3b82f6;--accent:#a855f7;
+    --text:#f8fafc;--muted:#94a3b8;--success:#10b981;--error:#ef4444
   }
-  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-  header{padding:18px 24px;background:linear-gradient(135deg,#1a0a3a,#0a1a3a);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  
+  /* Header & Toolbar */
+  header{padding:18px 24px;background:linear-gradient(135deg,#13072e,#0a1a3a);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
   header svg{width:36px;height:36px}
-  header h1{font-size:1.5rem;background:linear-gradient(90deg,var(--accent),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
-  header span{font-size:.8rem;color:var(--muted);margin-left:4px}
-  .toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 24px;background:#0f0f22;border-bottom:1px solid var(--border);align-items:center}
-  .toolbar label{font-size:.8rem;color:var(--muted);margin-right:4px}
-  .toolbar select{background:#1e1e3a;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
-  .toolbar select:focus{outline:none;border-color:var(--purple)}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
-  .btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff}
-  .btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+  header h1{font-size:1.6rem;background:linear-gradient(90deg,var(--accent),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;letter-spacing:-0.5px}
+  header span{font-size:.8rem;color:var(--muted);margin-left:4px;border:1px solid var(--purple);padding:2px 6px;border-radius:4px;background:rgba(139,92,246,0.1)}
+  
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;padding:14px 24px;background:#0d0d1e;border-bottom:1px solid var(--border);align-items:center}
+  
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:6px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s; font-family:inherit}
+  .btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;box-shadow:0 4px 12px rgba(139,92,246,0.2)}
+  .btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 16px rgba(139,92,246,0.3)}
   .btn-secondary{background:#1e1e3a;color:var(--text);border:1px solid var(--border)}
   .btn-secondary:hover{background:#2a2a4a;border-color:var(--accent)}
-  .btn-danger{background:#2a1a1a;color:#f87171;border:1px solid #4a1a1a}
-  .btn-danger:hover{background:#3a1a1a}
-  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-  .status{margin-left:auto;font-size:.82rem;padding:6px 12px;border-radius:6px;transition:all .3s}
-  .status.ok{background:#052e16;color:var(--success);border:1px solid #166534}
-  .status.err{background:#2a0a0a;color:var(--error);border:1px solid #7f1d1d}
-  .status.idle{background:#1e1e3a;color:var(--muted);border:1px solid var(--border)}
-  .editors{display:flex;flex:1;gap:0;overflow:hidden}
-  .pane{flex:1;display:flex;flex-direction:column;min-width:0}
-  .pane+.pane{border-left:2px solid var(--border)}
-  .pane-header{padding:10px 16px;background:#0f0f22;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  .pane-header span{font-size:.82rem;font-weight:600;color:var(--accent)}
-  .pane-header small{font-size:.75rem;color:var(--muted)}
-  textarea{flex:1;width:100%;background:#0a0a1a;color:#c4b5fd;border:none;resize:none;padding:16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.85rem;line-height:1.6;outline:none;tab-size:2}
-  textarea::placeholder{color:#2a2a4a}
-  textarea:focus{background:#0c0c1e}
-  #outputArea{color:#7dd3fc}
-  footer{padding:10px 24px;background:#0f0f22;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);text-align:center}
-/* Estilos do LoadString Generator */
-  .loadstring-container {
-    margin: 16px 24px;
-    background: #0f0f22;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .loadstring-content {
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .ls-label {
-    font-size: .85rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-  .ls-input-group {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 8px;
-  }
-  .loadstring-content input[type="text"] {
-    flex: 1;
-    background: #0a0a1a;
-    color: #7dd3fc;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-    font-size: .85rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .loadstring-content input[type="text"]:focus {
-    border-color: var(--purple);
-  }
-  .loadstring-content input[type="text"]::placeholder {
-    color: #2a2a4a;
-  }
-  .ls-status {
-    font-size: 0.8rem;
-    min-height: 16px;
-    font-weight: 500;
-  }
+  .btn-danger{background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2)}
+  .btn-danger:hover{background:rgba(239,68,68,0.2)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
   
-  @media(max-width:700px){
-    .loadstring-container { margin: 12px; }
-    .ls-input-group { flex-direction: column; gap: 8px; }
-  }
-  @media(max-width:700px){
+  /* Status */
+  .status{margin-left:auto;font-size:.82rem;padding:6px 12px;border-radius:6px;transition:all .3s; font-weight: 600;letter-spacing:0.3px}
+  .status.ok{background:rgba(16,185,129,0.1);color:var(--success);border:1px solid rgba(16,185,129,0.2)}
+  .status.err{background:rgba(239,68,68,0.1);color:var(--error);border:1px solid rgba(239,68,68,0.2)}
+  .status.idle{background:#1e1e3a;color:var(--muted);border:1px solid var(--border)}
+
+  /* Settings Panel */
+  .settings-container { margin: 16px 24px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow:0 8px 24px rgba(0,0,0,0.2) }
+  .settings-header { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  
+  .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--text); cursor: pointer; user-select: none; transition:color 0.2s }
+  .checkbox-label:hover { color: #fff; }
+  .checkbox-label input[type="checkbox"] { accent-color: var(--purple); width: 16px; height: 16px; cursor: pointer; }
+  
+  .slider-group { display: flex; flex-direction: column; gap: 10px; background: #080812; padding: 16px; border-radius: 8px; border: 1px solid var(--border); }
+  .slider-header { display: flex; justify-content: space-between; font-size: .9rem; font-weight:600 }
+  input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; height:6px; border-radius:4px; appearance:none; background:#1e1e3a }
+  input[type="range"]::-webkit-slider-thumb { appearance:none; width:16px; height:16px; background:var(--accent); border-radius:50%; cursor:pointer }
+
+  /* Editors */
+  .editors{display:flex;flex:1;gap:0;overflow:hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);}
+  .pane{flex:1;display:flex;flex-direction:column;min-width:0; background: #05050a;}
+  .pane+.pane{border-left:1px solid var(--border)}
+  .pane-header{padding:10px 16px;background:#0d0d1e;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .pane-header span{font-size:.85rem;font-weight:700;color:var(--accent); display:flex; align-items:center; gap:6px}
+  .pane-header small{font-size:.75rem;color:var(--muted); font-family:monospace}
+  
+  textarea{flex:1;width:100%;background:transparent;color:#c4b5fd;border:none;resize:none;padding:16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.85rem;line-height:1.6;outline:none;tab-size:2}
+  textarea::placeholder{color:#2a2a4a}
+  #outputArea{color:#7dd3fc; background:#040408}
+
+  /* LoadString Generator */
+  .loadstring-container { margin: 16px 24px; background: #0d0d1e; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .loadstring-content { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .ls-label { font-size: .85rem; color: var(--muted); margin-top: 4px; font-weight:600}
+  .ls-input-group { display: flex; gap: 12px; margin-bottom: 8px; }
+  .loadstring-content input[type="text"] { flex: 1; background: #05050a; color: #7dd3fc; border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: inherit; font-size: .9rem; outline: none; transition: border-color 0.2s; }
+  .loadstring-content input[type="text"]:focus { border-color: var(--purple); }
+  .ls-status { font-size: 0.8rem; min-height: 16px; font-weight: 500; }
+  
+  footer{padding:14px 24px;background:#05050a;font-size:.75rem;color:var(--muted);text-align:center;font-weight:500; letter-spacing:0.5px}
+
+  @media(max-width:900px){
     .editors{flex-direction:column}
-    .pane+.pane{border-left:none;border-top:2px solid var(--border)}
-    header h1{font-size:1.1rem}
-    .toolbar{padding:8px 12px}
+    .pane+.pane{border-left:none;border-top:1px solid var(--border)}
+    .ls-input-group { flex-direction: column; }
   }
 </style>
 </head>
 <body>
+
 <header>
   <svg viewBox="0 0 36 36" fill="none">
     <rect width="36" height="36" rx="8" fill="url(#g1)"/>
     <path d="M10 26L18 10L26 26" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M13 21h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-    <defs><linearGradient id="g1" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
   </svg>
-  <h1>Lua Obfuscator</h1><span>for Roblox</span>
+  <h1>Lua Obfuscator <span>PRO</span></h1>
 </header>
+
+<div class="settings-container">
+  <div class="settings-header">
+    <div style="display:flex; align-items:center; gap:8px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Configurações de Ofuscação Avançada
+    </div>
+    <span id="obfPercentage" style="color: var(--success); font-size: 0.85rem; font-weight:600; background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:4px">Nível: 0%</span>
+  </div>
+  
+  <div class="settings-grid">
+    <label class="checkbox-label" title="Substitui nomes de variáveis locais por hashes únicos (ex: _0x8f2a)"><input type="checkbox" id="cbRandomNames" checked> Nomes Hex Aleatórios</label>
+    <label class="checkbox-label" title="Converte chaves de tabelas visíveis para arrays ofuscados"><input type="checkbox" id="cbTableKeys" checked> Ofuscar Chaves de Tabela</label>
+    <label class="checkbox-label" title="Divide strings em múltiplos blocos menores e concatena dinamicamente"><input type="checkbox" id="cbSplitStrings" checked> Strings Fracionadas (Split)</label>
+    <label class="checkbox-label" title="Converte strings e URLs para formato string.char()"><input type="checkbox" id="cbStrings" checked> Ofuscar Strings Padrão / URLs</label>
+    <label class="checkbox-label" title="Gera matemática caótica (math.floor, falsos positivos)"><input type="checkbox" id="cbMathAdv" checked> Matemática Complexa</label>
+    <label class="checkbox-label" title="Insere variáveis e blocos condicionais que nunca executam"><input type="checkbox" id="cbDeadCode" checked> Inserir Código Morto</label>
+    <label class="checkbox-label" title="Injeta lixo no topo do script para dificultar a análise do fluxo"><input type="checkbox" id="cbShuffle" checked> Injeção Aleatória (Shuffle)</label>
+    <label class="checkbox-label" title="Limpa o código original"><input type="checkbox" id="cbComments" checked> Remover Comentários</label>
+    <label class="checkbox-label" title="Remove espaços em branco"><input type="checkbox" id="cbMinify" checked> Minificar Código</label>
+  </div>
+
+  <div class="slider-group">
+    <div class="slider-header">
+      <label>Nível Global: <strong id="levelValueLabel" style="color:var(--accent)">10</strong> / 10</label>
+      <span id="levelDesc" style="color:var(--muted)">Avançado Máximo (Impossível de ler)</span>
+    </div>
+    <input type="range" id="levelSlider" min="1" max="10" value="10">
+  </div>
+</div>
 
 <div class="toolbar">
   <button class="btn btn-primary" id="btnObfuscate">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    Ofuscar
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+    Processar Script
   </button>
-  <button class="btn btn-secondary" id="btnCopy" disabled>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-    Copiar
-  </button>
-  <button class="btn btn-secondary" id="btnDownload" disabled>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Baixar
-  </button>
-  <button class="btn btn-danger" id="btnClear">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-    Limpar
-  </button>
-  <label>Nível:</label>
-  <select id="levelSelect">
-    <option value="1">Leve</option>
-    <option value="2" selected>Médio</option>
-    <option value="3">Agressivo</option>
-  </select>
-  <div class="status idle" id="status">Pronto</div>
+  <button class="btn btn-secondary" id="btnCopy" disabled>Copiar Resultado</button>
+  <button class="btn btn-secondary" id="btnDownload" disabled>Baixar .lua</button>
+  <button class="btn btn-danger" id="btnClear">Limpar</button>
+  
+  <label class="checkbox-label" style="margin-left: 12px; font-weight:600">
+    <input type="checkbox" id="cbLivePreview" checked> Prévia ao Vivo
+  </label>
+  
+  <div class="status idle" id="status">Aguardando...</div>
 </div>
 
 <div class="editors">
   <div class="pane">
     <div class="pane-header">
-      <span>📝 Script Original</span>
+      <span>📝 Script de Entrada</span>
       <small id="infoIn">0 linhas</small>
     </div>
-    <textarea id="inputArea" placeholder="Cole ou digite seu script Lua aqui..."></textarea>
+    <textarea id="inputArea" placeholder="Cole seu código fonte Lua aqui..." spellcheck="false"></textarea>
   </div>
   <div class="pane">
     <div class="pane-header">
-      <span>🔒 Script Ofuscado</span>
+      <span>🔒 Script Protegido (Output)</span>
       <small id="infoOut">—</small>
     </div>
-    <textarea id="outputArea" readonly placeholder="O script ofuscado aparecerá aqui..."></textarea>
+    <textarea id="outputArea" readonly placeholder="O script ofuscado e encriptado aparecerá aqui..." spellcheck="false"></textarea>
   </div>
 </div>
 
 <div class="loadstring-container">
-  <div class="pane-header">
-    <span>📎 LoadString Generator</span>
-  </div>
+  <div class="pane-header"><span>📎 Gerador de LoadString (Bypass)</span></div>
   <div class="loadstring-content">
-    <label for="linkInput" class="ls-label">Link do Script (Pastebin, GitHub, Gist, etc.):</label>
+    <label for="linkInput" class="ls-label">URL Direta (Raw Pastebin, GitHub, etc):</label>
     <div class="ls-input-group">
-      <input type="text" id="linkInput" placeholder="Cole seu link aqui (ex: https://pastebin.com/LUJAuni2)" autocomplete="off">
-      <button class="btn btn-primary" id="btnGenerateLoadstring">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-        Gerar LoadString
-      </button>
+      <input type="text" id="linkInput" placeholder="Ex: https://pastebin.com/raw/XXXXXX" autocomplete="off">
+      <button class="btn btn-primary" id="btnGenerateLoadstring">Converter</button>
     </div>
-    
-    <label for="loadstringOutput" class="ls-label">Resultado:</label>
     <div class="ls-input-group">
-      <input type="text" id="loadstringOutput" readonly placeholder="A loadstring gerada aparecerá aqui...">
-      <button class="btn btn-secondary" id="btnCopyLoadstring" disabled>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        Copiar
-      </button>
+      <input type="text" id="loadstringOutput" readonly placeholder="Output gerado...">
+      <button class="btn btn-secondary" id="btnCopyLoadstring" disabled>Copiar</button>
     </div>
     <div id="loadstringStatus" class="ls-status"></div>
   </div>
 </div>
 
-<footer>Lua Obfuscator for Roblox — Processamento 100% local, nenhum dado é enviado para servidores.</footer>
+<footer>Powered by Advanced Regex & JS Obfuscation Engine — 100% Client-Side.</footer>
 
 <script>
-const DEMO = `-- Exemplo: Mensagem de boas vindas
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-
--- Função simples
-local function sayHello()
-    print("Olá, " .. player.Name)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Bem vindo",
-        Text = "Script funcionando normalmente!",
-        Duration = 5
-    })
-end
-
-sayHello()`;
-
-const inputArea  = document.getElementById('inputArea');
-const outputArea = document.getElementById('outputArea');
-const btnObfuscate = document.getElementById('btnObfuscate');
-const btnCopy    = document.getElementById('btnCopy');
-const btnDownload= document.getElementById('btnDownload');
-const btnClear   = document.getElementById('btnClear');
-const statusEl   = document.getElementById('status');
-const infoIn     = document.getElementById('infoIn');
-const infoOut    = document.getElementById('infoOut');
-const levelSelect= document.getElementById('levelSelect');
-
-inputArea.value = DEMO;
-updateInfo();
-
-inputArea.addEventListener('input', updateInfo);
-
-function updateInfo(){
-  const lines = inputArea.value.split('\n').length;
-  infoIn.textContent = lines + ' linha' + (lines!==1?'s':'');
+// ── Demo Script ─────────────────────────────────────────────────────────────
+const DEMO = `-- Configurações Core
+local config = {
+    Title = "Aimbot Pro",
+    DefaultState = false,
+    MaxDistance = 500
 }
 
+local player = game.Players.LocalPlayer
+local url = "https://example.com/api/auth"
+
+local function verifyAccess()
+    local placeId = game.PlaceId
+    if placeId == 142823291 then
+        return true
+    end
+    return false
+end
+
+if verifyAccess() then
+    print("Acesso Permitido para " .. player.Name)
+end`;
+
+// ── Elementos DOM ──────────────────────────────────────────────────────────
+const inputArea = document.getElementById('inputArea');
+const outputArea = document.getElementById('outputArea');
+const btnObfuscate = document.getElementById('btnObfuscate');
+const btnCopy = document.getElementById('btnCopy');
+const btnDownload = document.getElementById('btnDownload');
+const btnClear = document.getElementById('btnClear');
+const statusEl = document.getElementById('status');
+const infoIn = document.getElementById('infoIn');
+const infoOut = document.getElementById('infoOut');
+const obfPercentage = document.getElementById('obfPercentage');
+
+// Checkboxes de Configuração
+const cbRandomNames = document.getElementById('cbRandomNames');
+const cbTableKeys = document.getElementById('cbTableKeys');
+const cbSplitStrings = document.getElementById('cbSplitStrings');
+const cbStrings = document.getElementById('cbStrings');
+const cbMathAdv = document.getElementById('cbMathAdv');
+const cbDeadCode = document.getElementById('cbDeadCode');
+const cbShuffle = document.getElementById('cbShuffle');
+const cbComments = document.getElementById('cbComments');
+const cbMinify = document.getElementById('cbMinify');
+const cbLivePreview = document.getElementById('cbLivePreview');
+const levelSlider = document.getElementById('levelSlider');
+const levelValueLabel = document.getElementById('levelValueLabel');
+const levelDesc = document.getElementById('levelDesc');
+
+const allCbs = [cbRandomNames, cbTableKeys, cbSplitStrings, cbStrings, cbMathAdv, cbDeadCode, cbShuffle, cbComments, cbMinify];
+
+// Variáveis Globais
+let previewTimeout;
+let _counter = 0;
+
+// ── Funções Auxiliares ─────────────────────────────────────────────────────
 function setStatus(msg, type){
   statusEl.textContent = msg;
   statusEl.className = 'status ' + type;
 }
 
-// ── Utilities ──────────────────────────────────────────────────────────────
-const ROBLOX_GLOBALS = new Set([
-  'game','workspace','script','plugin','shared','_G','_VERSION',
-  'print','warn','error','assert','pcall','xpcall','type','tostring',
-  'tonumber','ipairs','pairs','next','select','unpack','rawget','rawset',
-  'rawequal','rawlen','setmetatable','getmetatable','require','loadstring',
-  'load','dofile','loadfile','collectgarbage','gcinfo','newproxy',
-  'tick','time','wait','delay','spawn','coroutine','math','string',
-  'table','os','io','bit32','utf8','task','Instance','Enum','Vector2',
-  'Vector3','CFrame','Color3','BrickColor','UDim','UDim2','Ray','Region3',
-  'NumberSequence','ColorSequence','NumberRange','Rect','TweenInfo',
-  'PhysicalProperties','Random','RaycastParams','OverlapParams',
-  'true','false','nil','and','or','not','if','then','else','elseif',
-  'end','do','while','repeat','until','for','in','local','function',
-  'return','break','continue','goto'
-]);
-
-let _counter = 0;
-function randName(){ return '_0x'+(++_counter).toString(16).padStart(4,'0') }
-function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min }
-function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=randInt(0,i);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr }
-
-function toHex(s){
-  return s.split('').map(c=>'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')
+function updateInfo(){
+  const lines = inputArea.value.split('\n').length;
+  infoIn.textContent = lines + ' linha' + (lines !== 1 ? 's' : '');
+  triggerLivePreview();
 }
 
-function toCharCodes(s){
-  const codes = s.split('').map(c=>c.charCodeAt(0));
-  return 'string.char('+codes.join(',')+')';
+function triggerLivePreview() {
+  if (!cbLivePreview.checked) return;
+  clearTimeout(previewTimeout);
+  setStatus('Processando...', 'idle');
+  previewTimeout = setTimeout(() => { executeObfuscation(); }, 400);
 }
 
-function numToExpr(n){
-  if(!Number.isInteger(n)||n<0||n>9999) return String(n);
-  const a = randInt(1,Math.max(1,n));
-  const b = n - a;
-  const ops = [
-    `${a}+${b}`,
-    `${n+a}-${a}`,
-    `${a}*1+${b}`,
+// ── Core do Ofuscador (Nível Profissional) ─────────────────────────────────
+const ROBLOX_GLOBALS = new Set(['game','workspace','script','plugin','shared','_G','_VERSION','print','warn','error','assert','pcall','xpcall','type','tostring','tonumber','ipairs','pairs','next','select','unpack','rawget','rawset','rawequal','rawlen','setmetatable','getmetatable','require','loadstring','load','dofile','loadfile','collectgarbage','gcinfo','newproxy','tick','time','wait','delay','spawn','coroutine','math','string','table','os','io','bit32','utf8','task','Instance','Enum','Vector2','Vector3','CFrame','Color3','BrickColor','UDim','UDim2','Ray','Region3','NumberSequence','ColorSequence','NumberRange','Rect','TweenInfo','PhysicalProperties','Random','RaycastParams','OverlapParams','true','false','nil','and','or','not','if','then','else','elseif','end','do','while','repeat','until','for','in','local','function','return','break','continue','goto']);
+
+// 1. Nomes Hexadecimais Aleatórios Dinâmicos
+function randName() { 
+  if (cbRandomNames.checked) {
+    const chars = "0123456789abcdef";
+    let name = "_0x";
+    const len = Math.floor(Math.random() * 5) + 4; // 4 a 8 caracteres
+    for(let i=0; i<len; i++) name += chars[Math.floor(Math.random() * chars.length)];
+    return name;
+  } else {
+    return '_0x' + (++_counter).toString(16).padStart(4, '0');
+  }
+}
+
+// 2. Fragmentação e Ofuscação de Strings
+function getCharCodes(str) {
+  let chars = [];
+  for(let i = 0; i < str.length; i++) chars.push(str.charCodeAt(i));
+  return `string.char(${chars.join(",")})`;
+}
+
+function obfuscateStringAdvanced(str) {
+  if(str.length === 0) return '""';
+  if (!cbSplitStrings.checked || str.length <= 4) {
+    return getCharCodes(str);
+  }
+  
+  // Dividir string em pedaços e concatenar inline
+  let chunks = [];
+  let currentChunk = "";
+  for(let i=0; i<str.length; i++){
+    currentChunk += str[i];
+    if(currentChunk.length >= Math.floor(Math.random() * 3) + 2 || i === str.length-1){
+      chunks.push(getCharCodes(currentChunk));
+      currentChunk = "";
+    }
+  }
+  return `(${chunks.join("..")})`;
+}
+
+// 3. Matemática Complexa
+function obfuscateNumberAdvanced(num) {
+  const n = parseFloat(num);
+  if (!Number.isInteger(n) || n < 0) return num; 
+  
+  if (!cbMathAdv.checked) {
+    return `(${Math.floor(n/2)}+${Math.ceil(n/2)})`;
+  }
+
+  const templates = [
+    `(${n}+0-0)`,
+    `(math.floor(${n*10}/10))`,
+    `(${n*2}/2)`,
+    `(${Math.floor(n/2)}+${Math.ceil(n/2)})`,
+    `((${n}*${Math.ceil(Math.random()*3)})/${Math.ceil(Math.random()*3)}*0+${n})`
   ];
-  return ops[randInt(0,ops.length-1)];
+  return templates[Math.floor(Math.random() * templates.length)];
 }
 
-function splitString(s){
-  if(s.length<=4) return `"${s.replace(/"/g,'\\"')}"`;
-  const mid = Math.floor(s.length/2);
-  const a = s.slice(0,mid);
-  const b = s.slice(mid);
-  return `"${a.replace(/"/g,'\\"')}".. "${b.replace(/"/g,'\\"')}"`;
-}
-
-function deadCode(){
-  const vars = ['_d'+randInt(0,999),'_x'+randInt(0,999)];
+// 4. Inserção de Código Morto Seguro
+function generateDeadCode() {
+  const vars = [randName(), randName(), randName()];
   const snippets = [
-    `local ${vars[0]} = (1==1) and true or false`,
-    `if (0~=1) then local ${vars[0]}=${randInt(1,100)} end`,
-    `local ${vars[0]}=math.floor(${randInt(1,50)}/${randInt(1,10)}+0)`,
-    `do local ${vars[0]}="${randInt(0,9999)}" end`,
+    `local ${vars[0]} = function() if false then return ${Math.floor(Math.random()*100)} end end;`,
+    `local ${vars[1]} = (1==2) and true or false;`,
+    `if (0~=0) then local ${vars[2]}="${Math.floor(Math.random()*999)}" end;`
   ];
-  return snippets[randInt(0,snippets.length-1)];
+  return snippets[Math.floor(Math.random() * snippets.length)];
 }
+
+// 5. Injeção de Embaralhamento (Shuffle Dummy Functions)
+function injectShuffleBlocks(code) {
+  let blocks = [];
+  for(let i=0; i < Math.floor(Math.random() * 3) + 2; i++){
+    let dummyFunc = `local function ${randName()}() return ${obfuscateNumberAdvanced(Math.floor(Math.random()*100))} end;`;
+    blocks.push(dummyFunc);
+  }
+  return blocks.join('\n') + '\n' + code;
+}
+
+// Processador Principal
+function runObfuscation(src) {
+  _counter = 0;
+  let code = src;
+
+  // Limpeza
+  if (cbComments.checked) {
+    code = code.replace(/--\[\[[\s\S]*?\]\]/g, '').replace(/--[^\n]*/g, '');          
+  }
+
+  // Ofuscar Chaves de Tabela ( { Key = Val } -> { ["Key"] = Val } )
+  if (cbTableKeys.checked) {
+    // Procura padrões parecidos com atribuição de tabela, de forma segura
+    const tableKeyRegex = /([{,;]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*=(?!=)/g;
+    code = code.replace(tableKeyRegex, (match, prefix, key) => {
+       // O prefixo é a chave anterior ou abertura de chaves, mantemos ele
+       return `${prefix}["${key}"] =`;
+    });
+  }
+
+  // Renomear Variáveis Locais
+  const localNames = new Map();
+  const localRe = /\blocal\s+(?:function\s+)?([a-zA-Z_][a-zA-Z0-9_]*)/g;
+  let m;
+  while((m = localRe.exec(code)) !== null){
+    const name = m[1];
+    if(!ROBLOX_GLOBALS.has(name) && !localNames.has(name)){
+      localNames.set(name, randName());
+    }
+  }
+  // Aplica renomeação com limites de palavra inteira (Word Boundaries)
+  localNames.forEach((newName, oldName)=>{
+    const re = new RegExp('\\b'+oldName+'\\b','g');
+    code = code.replace(re, newName);
+  });
+
+  // Ofuscar URLs / Strings
+  if (cbStrings.checked || cbSplitStrings.checked) {
+    const strRegex = /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g;
+    code = code.replace(strRegex, (match) => {
+      let inner = match.substring(1, match.length - 1);
+      inner = inner.replace(/\\"/g, '"').replace(/\\'/g, "'");
+      return obfuscateStringAdvanced(inner);
+    });
+  }
+
+  // Ofuscar Números
+  if (cbMathAdv.checked) {
+    const numRegex = /(?<![a-zA-Z_])\b(\d+)\b/g;
+    code = code.replace(numRegex, (match) => {
+      return obfuscateNumberAdvanced(match);
+    });
+  }
+
+  // Inserir Código Morto e Embaralhamento Virtual
+  if (cbDeadCode.checked) {
+    const lines = code.split('\n');
+    const result = [];
+    for(const line of lines){
+      result.push(line);
+      if(line.trim() && Math.random() < 0.25) {
+        result.push(generateDeadCode());
+      }
+    }
+    code = result.join('\n');
+    const wrapVar = randName();
+    code = `local ${wrapVar}=true; if ${wrapVar} then\n${code}\nend`;
+  }
+  
+  if (cbShuffle.checked) {
+    code = injectShuffleBlocks(code);
+  }
+
+  // Minificação Final
+  if (cbMinify.checked) {
+    code = code.replace(/\n+/g, ' ')
+               .replace(/\s+/g, ' ')
+               .replace(/;\s*;/g, ';')
+               .trim();
+  }
+
+  return code;
+}
+
+// ── Lógica de Execução e Interface ─────────────────────────────────────────
+function executeObfuscation() {
+  const src = inputArea.value.trim();
+  if(!src){ 
+    outputArea.value = '';
+    setStatus('Aguardando código', 'idle');
+    btnCopy.disabled = true;
+    btnDownload.disabled = true;
+    obfPercentage.textContent = 'Nível: 0%';
+    return; 
+  }
+  
+  try {
+    const result = runObfuscation(src);
+    outputArea.value = result;
+    
+    const lines = result.split('\n').length;
+    infoOut.textContent = lines + ' linhas · ' + result.length + ' chars';
+    
+    // Cálculo do peso final da ofuscação
+    const activeFeatures = allCbs.filter(cb => cb.checked).length;
+    let score = Math.round((activeFeatures / allCbs.length) * 100);
+    obfPercentage.textContent = `Poder de Ofuscação: ${score}%`;
+    obfPercentage.style.color = score > 80 ? 'var(--success)' : (score > 40 ? '#f59e0b' : 'var(--muted)');
+    
+    btnCopy.disabled = false;
+    btnDownload.disabled = false;
+    setStatus('✔ Encriptação Concluída', 'ok');
+  } catch(e) {
+    setStatus('✖ Erro de Sintaxe: ' + e.message, 'err');
+  }
+}
+
+// Interatividade do Slider
+levelSlider.addEventListener('input', (e) => {
+  const val = parseInt(e.target.value);
+  levelValueLabel.textContent = val;
+  
+  if (val <= 3) {
+    levelDesc.textContent = "Básico (Renomear + Limpar)";
+    [cbRandomNames, cbTableKeys, cbSplitStrings, cbStrings, cbMathAdv, cbDeadCode, cbShuffle].forEach(cb => cb.checked = false);
+    [cbComments, cbMinify].forEach(cb => cb.checked = true);
+  } else if (val <= 7) {
+    levelDesc.textContent = "Intermediário (Matemática + Strings)";
+    [cbRandomNames, cbStrings, cbMathAdv, cbComments, cbMinify].forEach(cb => cb.checked = true);
+    [cbTableKeys, cbSplitStrings, cbDeadCode, cbShuffle].forEach(cb => cb.checked = false);
+  } else {
+    levelDesc.textContent = "Profissional Máximo (Impossível de ler)";
+    allCbs.forEach(cb => cb.checked = true);
+  }
+  triggerLivePreview();
+});
+
+allCbs.concat([cbLivePreview]).forEach(cb => {
+  cb.addEventListener('change', triggerLivePreview);
+});
+
+inputArea.addEventListener('input', updateInfo);
+btnObfuscate.addEventListener('click', executeObfuscation);
+
+btnCopy.addEventListener('click', () => {
+  navigator.clipboard.writeText(outputArea.value).then(() => {
+    const originalText = btnCopy.textContent;
+    btnCopy.textContent = '✔ Copiado!';
+    setTimeout(() => btnCopy.textContent = originalText, 2000);
+  });
+});
+
+btnDownload.addEventListener('click', () => {
+  const blob = new Blob([outputArea.value], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'protected_script.lua';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+btnClear.addEventListener('click', () => {
+  inputArea.value = '';
+  outputArea.value = '';
+  updateInfo();
+});
+
 // ── LoadString Generator ───────────────────────────────────────────────────
 const linkInput = document.getElementById('linkInput');
 const loadstringOutput = document.getElementById('loadstringOutput');
@@ -301,210 +511,44 @@ function setLsStatus(msg, color){
   loadstringStatus.style.color = color;
 }
 
-function detectarTipoLink(urlStr){
-  try {
-    const url = new URL(urlStr);
-    let finalUrl = urlStr;
-
-    // Converte Pastebin para Raw
-    if (url.hostname.includes('pastebin.com')) {
-      if (!url.pathname.startsWith('/raw/')) {
-         const id = url.pathname.replace('/', '');
-         if (id) finalUrl = `https://pastebin.com/raw/${id}`;
-      }
-    }
-    // Converte GitHub Blob para Raw
-    else if (url.hostname.includes('github.com')) {
-      if (url.pathname.includes('/blob/')) {
-        finalUrl = urlStr.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-      }
-    }
-    // Converte Gist GitHub para Raw (Adiciona /raw ao final)
-    else if (url.hostname.includes('gist.github.com')) {
-       if (!url.pathname.endsWith('/raw')) {
-          finalUrl = urlStr + '/raw';
-       }
-    }
-
-    return finalUrl;
-  } catch (e) {
-    return null; // URL inválida
-  }
-}
-
 btnGenerateLoadstring.addEventListener('click', () => {
   const val = linkInput.value.trim();
+  if (!val) { setLsStatus('⚠ Insira um link primeiro.', 'var(--error)'); return; }
   
-  if (!val) {
-    setLsStatus('⚠ Por favor, insira um link antes de gerar.', 'var(--error)');
-    return;
-  }
-
-  const rawUrl = detectarTipoLink(val);
+  let finalUrl = val;
+  try {
+    const url = new URL(val);
+    if (url.hostname.includes('pastebin.com') && !url.pathname.startsWith('/raw/')) {
+       const id = url.pathname.replace('/', '');
+       if (id) finalUrl = `https://pastebin.com/raw/${id}`;
+    } else if (url.hostname.includes('github.com') && url.pathname.includes('/blob/')) {
+       finalUrl = val.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    } else if (url.hostname.includes('gist.github.com') && !url.pathname.endsWith('/raw')) {
+       finalUrl = val + '/raw';
+    }
+  } catch(e) {}
   
-  if (!rawUrl) {
-    setLsStatus('✖ URL inválida! Certifique-se de incluir http:// ou https://', 'var(--error)');
-    return;
-  }
-
-  const loadstringCode = `loadstring(game:HttpGet("${rawUrl}"))()`;
-  loadstringOutput.value = loadstringCode;
+  loadstringOutput.value = `loadstring(game:HttpGet("${finalUrl}"))()`;
   btnCopyLoadstring.disabled = false;
-  setLsStatus('✔ LoadString gerada com sucesso!', 'var(--success)');
+  setLsStatus('✔ Pronto!', 'var(--success)');
 });
 
 btnCopyLoadstring.addEventListener('click', () => {
-  navigator.clipboard.writeText(loadstringOutput.value).then(() => {
-    setLsStatus('✔ LoadString copiada para a área de transferência!', 'var(--success)');
-    
-    // Efeito visual no botão (opcional)
-    const oldHtml = btnCopyLoadstring.innerHTML;
-    btnCopyLoadstring.innerHTML = "Copiado!";
-    setTimeout(() => { btnCopyLoadstring.innerHTML = oldHtml; }, 2000);
-  }).catch(err => {
-    setLsStatus('✖ Falha ao copiar: ' + err, 'var(--error)');
-  });
+  navigator.clipboard.writeText(loadstringOutput.value).then(() => setLsStatus('✔ Copiado!', 'var(--success)'));
 });
 
-// Limpar o status e o output ao editar o link
 linkInput.addEventListener('input', () => {
   loadstringOutput.value = '';
   btnCopyLoadstring.disabled = true;
   setLsStatus('', 'inherit');
 });
 
-// Limpar o status e o output ao editar o link
-linkInput.addEventListener('input', () => {
-  loadstringOutput.value = '';
-  btnCopyLoadstring.disabled = true;
-  setLsStatus('', 'inherit');
-});
-// ── Core Obfuscator ────────────────────────────────────────────────────────
-function obfuscate(src, level){
-  _counter = 0;
-  let code = src;
-
-  // 1. Remove comments
-  code = code.replace(/--\[\[[\s\S]*?\]\]/g,'');
-  code = code.replace(/--[^\n]*/g,'');
-
-  // 2. Collect local variable/function names to rename
-  const localNames = new Map();
-  const localRe = /\blocal\s+(?:function\s+)?([a-zA-Z_][a-zA-Z0-9_]*)/g;
-  let m;
-  while((m=localRe.exec(code))!==null){
-    const name = m[1];
-    if(!ROBLOX_GLOBALS.has(name) && !localNames.has(name)){
-      localNames.set(name, randName());
-    }
-  }
-
-  // 3. Rename locals (safe: only rename word-boundary matches)
-  localNames.forEach((newName, oldName)=>{
-    const re = new RegExp('\\b'+oldName+'\\b','g');
-    code = code.replace(re, newName);
-  });
-
-  // 4. Transform string literals
-  if(level>=2){
-    code = code.replace(/"((?:[^"\\]|\\.)*)"/g, (_,s)=>{
-      if(s.length===0) return '""';
-      const choice = randInt(0,2);
-      if(choice===0) return toCharCodes(s);
-      if(choice===1) return `"${toHex(s)}"`;
-      return splitString(s);
-    });
-    code = code.replace(/'((?:[^'\\]|\\.)*)'/g, (_,s)=>{
-      if(s.length===0) return "''";
-      return toCharCodes(s);
-    });
-  }
-
-  // 5. Transform integer literals
-  if(level>=2){
-    code = code.replace(/\b(\d+)\b/g, (_, n)=>{
-      const num = parseInt(n);
-      if(num>=0 && num<=9999 && Number.isInteger(num)) return `(${numToExpr(num)})`;
-      return n;
-    });
-  }
-
-  // 6. Insert dead code lines
-  if(level>=2){
-    const lines = code.split('\n');
-    const result = [];
-    for(const line of lines){
-      result.push(line);
-      if(line.trim() && Math.random()<0.25) result.push(deadCode());
-    }
-    code = result.join('\n');
-  }
-
-  // 7. Aggressive: wrap in a closure with shuffled local declarations
-  if(level>=3){
-    // Extract all local declarations and shuffle them to top
-    const declRe = /^(\s*local\s+[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*[^\n]+)/gm;
-    const decls = [];
-    code = code.replace(declRe, (match)=>{ decls.push(match.trim()); return ''; });
-    shuffle(decls);
-    const header = decls.join('\n');
-    code = header + '\n' + code;
-
-    // Wrap everything in a do...end block with a junk conditional
-    const junkVar = '_j'+randInt(1000,9999);
-    code = `local ${junkVar}=(${randInt(1,100)}==${randInt(1,100)} and ${randInt(1,100)}==${randInt(1,100)})\ndo\n${code}\nend`;
-  }
-
-  // 8. Minify whitespace (collapse multiple blank lines)
-  code = code.replace(/\n{3,}/g,'\n\n').trim();
-
-  return code;
+// ── Inicialização ──────────────────────────────────────────────────────────
+inputArea.value = DEMO;
+updateInfo();
+if (inputArea.value.trim().length > 0) {
+  executeObfuscation();
 }
-
-// ── Events ─────────────────────────────────────────────────────────────────
-btnObfuscate.addEventListener('click',()=>{
-  const src = inputArea.value.trim();
-  if(!src){ setStatus('⚠ Cole um script primeiro.','err'); return; }
-  try{
-    setStatus('Processando...','idle');
-    const level = parseInt(levelSelect.value);
-    const result = obfuscate(src, level);
-    outputArea.value = result;
-    const lines = result.split('\n').length;
-    infoOut.textContent = lines+' linhas · '+result.length+' chars';
-    btnCopy.disabled = false;
-    btnDownload.disabled = false;
-    setStatus('✔ Ofuscação concluída com sucesso!','ok');
-  }catch(e){
-    setStatus('✖ Erro: '+e.message,'err');
-  }
-});
-
-btnCopy.addEventListener('click',()=>{
-  navigator.clipboard.writeText(outputArea.value).then(()=>{
-    setStatus('✔ Copiado para a área de transferência!','ok');
-  });
-});
-
-btnDownload.addEventListener('click',()=>{
-  const blob = new Blob([outputArea.value],{type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'obfuscated.lua';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  setStatus('✔ Arquivo baixado!','ok');
-});
-
-btnClear.addEventListener('click',()=>{
-  inputArea.value='';
-  outputArea.value='';
-  btnCopy.disabled=true;
-  btnDownload.disabled=true;
-  infoOut.textContent='—';
-  setStatus('Pronto','idle');
-  updateInfo();
-});
 </script>
 </body>
 </html>
