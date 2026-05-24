@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roblox Lua Obfuscator</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d0d1a;--panel:#12122a;--border:#2a2a5a;
+    --purple:#7c3aed;--blue:#2563eb;--accent:#a855f7;
+    --text:#e2e8f0;--muted:#64748b;--success:#22c55e;--error:#ef4444
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+  header{padding:18px 24px;background:linear-gradient(135deg,#1a0a3a,#0a1a3a);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+  header svg{width:36px;height:36px}
+  header h1{font-size:1.5rem;background:linear-gradient(90deg,var(--accent),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+  header span{font-size:.8rem;color:var(--muted);margin-left:4px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 24px;background:#0f0f22;border-bottom:1px solid var(--border);align-items:center}
+  .toolbar label{font-size:.8rem;color:var(--muted);margin-right:4px}
+  .toolbar select{background:#1e1e3a;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.82rem;cursor:pointer}
+  .toolbar select:focus{outline:none;border-color:var(--purple)}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff}
+  .btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+  .btn-secondary{background:#1e1e3a;color:var(--text);border:1px solid var(--border)}
+  .btn-secondary:hover{background:#2a2a4a;border-color:var(--accent)}
+  .btn-danger{background:#2a1a1a;color:#f87171;border:1px solid #4a1a1a}
+  .btn-danger:hover{background:#3a1a1a}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .status{margin-left:auto;font-size:.82rem;padding:6px 12px;border-radius:6px;transition:all .3s}
+  .status.ok{background:#052e16;color:var(--success);border:1px solid #166534}
+  .status.err{background:#2a0a0a;color:var(--error);border:1px solid #7f1d1d}
+  .status.idle{background:#1e1e3a;color:var(--muted);border:1px solid var(--border)}
+  .editors{display:flex;flex:1;gap:0;overflow:hidden}
+  .pane{flex:1;display:flex;flex-direction:column;min-width:0}
+  .pane+.pane{border-left:2px solid var(--border)}
+  .pane-header{padding:10px 16px;background:#0f0f22;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .pane-header span{font-size:.82rem;font-weight:600;color:var(--accent)}
+  .pane-header small{font-size:.75rem;color:var(--muted)}
+  textarea{flex:1;width:100%;background:#0a0a1a;color:#c4b5fd;border:none;resize:none;padding:16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.85rem;line-height:1.6;outline:none;tab-size:2}
+  textarea::placeholder{color:#2a2a4a}
+  textarea:focus{background:#0c0c1e}
+  #outputArea{color:#7dd3fc}
+  footer{padding:10px 24px;background:#0f0f22;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);text-align:center}
+  @media(max-width:700px){
+    .editors{flex-direction:column}
+    .pane+.pane{border-left:none;border-top:2px solid var(--border)}
+    header h1{font-size:1.1rem}
+    .toolbar{padding:8px 12px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 36 36" fill="none">
+    <rect width="36" height="36" rx="8" fill="url(#g1)"/>
+    <path d="M10 26L18 10L26 26" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M13 21h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+  </svg>
+  <h1>Lua Obfuscator</h1><span>for Roblox</span>
+</header>
+
+<div class="toolbar">
+  <button class="btn btn-primary" id="btnObfuscate">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Ofuscar
+  </button>
+  <button class="btn btn-secondary" id="btnCopy" disabled>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+    Copiar
+  </button>
+  <button class="btn btn-secondary" id="btnDownload" disabled>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Baixar
+  </button>
+  <button class="btn btn-danger" id="btnClear">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Limpar
+  </button>
+  <label>Nível:</label>
+  <select id="levelSelect">
+    <option value="1">Leve</option>
+    <option value="2" selected>Médio</option>
+    <option value="3">Agressivo</option>
+  </select>
+  <div class="status idle" id="status">Pronto</div>
+</div>
+
+<div class="editors">
+  <div class="pane">
+    <div class="pane-header">
+      <span>📝 Script Original</span>
+      <small id="infoIn">0 linhas</small>
+    </div>
+    <textarea id="inputArea" placeholder="Cole ou digite seu script Lua aqui..."></textarea>
+  </div>
+  <div class="pane">
+    <div class="pane-header">
+      <span>🔒 Script Ofuscado</span>
+      <small id="infoOut">—</small>
+    </div>
+    <textarea id="outputArea" readonly placeholder="O script ofuscado aparecerá aqui..."></textarea>
+  </div>
+</div>
+
+<footer>Lua Obfuscator for Roblox — Processamento 100% local, nenhum dado é enviado para servidores.</footer>
+
+<script>
+const DEMO = `-- Exemplo: Mensagem de boas vindas
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Função simples
+local function sayHello()
+    print("Olá, " .. player.Name)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Bem vindo",
+        Text = "Script funcionando normalmente!",
+        Duration = 5
+    })
+end
+
+sayHello()`;
+
+const inputArea  = document.getElementById('inputArea');
+const outputArea = document.getElementById('outputArea');
+const btnObfuscate = document.getElementById('btnObfuscate');
+const btnCopy    = document.getElementById('btnCopy');
+const btnDownload= document.getElementById('btnDownload');
+const btnClear   = document.getElementById('btnClear');
+const statusEl   = document.getElementById('status');
+const infoIn     = document.getElementById('infoIn');
+const infoOut    = document.getElementById('infoOut');
+const levelSelect= document.getElementById('levelSelect');
+
+inputArea.value = DEMO;
+updateInfo();
+
+inputArea.addEventListener('input', updateInfo);
+
+function updateInfo(){
+  const lines = inputArea.value.split('\n').length;
+  infoIn.textContent = lines + ' linha' + (lines!==1?'s':'');
+}
+
+function setStatus(msg, type){
+  statusEl.textContent = msg;
+  statusEl.className = 'status ' + type;
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+const ROBLOX_GLOBALS = new Set([
+  'game','workspace','script','plugin','shared','_G','_VERSION',
+  'print','warn','error','assert','pcall','xpcall','type','tostring',
+  'tonumber','ipairs','pairs','next','select','unpack','rawget','rawset',
+  'rawequal','rawlen','setmetatable','getmetatable','require','loadstring',
+  'load','dofile','loadfile','collectgarbage','gcinfo','newproxy',
+  'tick','time','wait','delay','spawn','coroutine','math','string',
+  'table','os','io','bit32','utf8','task','Instance','Enum','Vector2',
+  'Vector3','CFrame','Color3','BrickColor','UDim','UDim2','Ray','Region3',
+  'NumberSequence','ColorSequence','NumberRange','Rect','TweenInfo',
+  'PhysicalProperties','Random','RaycastParams','OverlapParams',
+  'true','false','nil','and','or','not','if','then','else','elseif',
+  'end','do','while','repeat','until','for','in','local','function',
+  'return','break','continue','goto'
+]);
+
+let _counter = 0;
+function randName(){ return '_0x'+(++_counter).toString(16).padStart(4,'0') }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=randInt(0,i);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr }
+
+function toHex(s){
+  return s.split('').map(c=>'\\x'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')
+}
+
+function toCharCodes(s){
+  const codes = s.split('').map(c=>c.charCodeAt(0));
+  return 'string.char('+codes.join(',')+')';
+}
+
+function numToExpr(n){
+  if(!Number.isInteger(n)||n<0||n>9999) return String(n);
+  const a = randInt(1,Math.max(1,n));
+  const b = n - a;
+  const ops = [
+    `${a}+${b}`,
+    `${n+a}-${a}`,
+    `${a}*1+${b}`,
+  ];
+  return ops[randInt(0,ops.length-1)];
+}
+
+function splitString(s){
+  if(s.length<=4) return `"${s.replace(/"/g,'\\"')}"`;
+  const mid = Math.floor(s.length/2);
+  const a = s.slice(0,mid);
+  const b = s.slice(mid);
+  return `"${a.replace(/"/g,'\\"')}".. "${b.replace(/"/g,'\\"')}"`;
+}
+
+function deadCode(){
+  const vars = ['_d'+randInt(0,999),'_x'+randInt(0,999)];
+  const snippets = [
+    `local ${vars[0]} = (1==1) and true or false`,
+    `if (0~=1) then local ${vars[0]}=${randInt(1,100)} end`,
+    `local ${vars[0]}=math.floor(${randInt(1,50)}/${randInt(1,10)}+0)`,
+    `do local ${vars[0]}="${randInt(0,9999)}" end`,
+  ];
+  return snippets[randInt(0,snippets.length-1)];
+}
+
+// ── Core Obfuscator ────────────────────────────────────────────────────────
+function obfuscate(src, level){
+  _counter = 0;
+  let code = src;
+
+  // 1. Remove comments
+  code = code.replace(/--\[\[[\s\S]*?\]\]/g,'');
+  code = code.replace(/--[^\n]*/g,'');
+
+  // 2. Collect local variable/function names to rename
+  const localNames = new Map();
+  const localRe = /\blocal\s+(?:function\s+)?([a-zA-Z_][a-zA-Z0-9_]*)/g;
+  let m;
+  while((m=localRe.exec(code))!==null){
+    const name = m[1];
+    if(!ROBLOX_GLOBALS.has(name) && !localNames.has(name)){
+      localNames.set(name, randName());
+    }
+  }
+
+  // 3. Rename locals (safe: only rename word-boundary matches)
+  localNames.forEach((newName, oldName)=>{
+    const re = new RegExp('\\b'+oldName+'\\b','g');
+    code = code.replace(re, newName);
+  });
+
+  // 4. Transform string literals
+  if(level>=2){
+    code = code.replace(/"((?:[^"\\]|\\.)*)"/g, (_,s)=>{
+      if(s.length===0) return '""';
+      const choice = randInt(0,2);
+      if(choice===0) return toCharCodes(s);
+      if(choice===1) return `"${toHex(s)}"`;
+      return splitString(s);
+    });
+    code = code.replace(/'((?:[^'\\]|\\.)*)'/g, (_,s)=>{
+      if(s.length===0) return "''";
+      return toCharCodes(s);
+    });
+  }
+
+  // 5. Transform integer literals
+  if(level>=2){
+    code = code.replace(/\b(\d+)\b/g, (_, n)=>{
+      const num = parseInt(n);
+      if(num>=0 && num<=9999 && Number.isInteger(num)) return `(${numToExpr(num)})`;
+      return n;
+    });
+  }
+
+  // 6. Insert dead code lines
+  if(level>=2){
+    const lines = code.split('\n');
+    const result = [];
+    for(const line of lines){
+      result.push(line);
+      if(line.trim() && Math.random()<0.25) result.push(deadCode());
+    }
+    code = result.join('\n');
+  }
+
+  // 7. Aggressive: wrap in a closure with shuffled local declarations
+  if(level>=3){
+    // Extract all local declarations and shuffle them to top
+    const declRe = /^(\s*local\s+[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*[^\n]+)/gm;
+    const decls = [];
+    code = code.replace(declRe, (match)=>{ decls.push(match.trim()); return ''; });
+    shuffle(decls);
+    const header = decls.join('\n');
+    code = header + '\n' + code;
+
+    // Wrap everything in a do...end block with a junk conditional
+    const junkVar = '_j'+randInt(1000,9999);
+    code = `local ${junkVar}=(${randInt(1,100)}==${randInt(1,100)} and ${randInt(1,100)}==${randInt(1,100)})\ndo\n${code}\nend`;
+  }
+
+  // 8. Minify whitespace (collapse multiple blank lines)
+  code = code.replace(/\n{3,}/g,'\n\n').trim();
+
+  return code;
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+btnObfuscate.addEventListener('click',()=>{
+  const src = inputArea.value.trim();
+  if(!src){ setStatus('⚠ Cole um script primeiro.','err'); return; }
+  try{
+    setStatus('Processando...','idle');
+    const level = parseInt(levelSelect.value);
+    const result = obfuscate(src, level);
+    outputArea.value = result;
+    const lines = result.split('\n').length;
+    infoOut.textContent = lines+' linhas · '+result.length+' chars';
+    btnCopy.disabled = false;
+    btnDownload.disabled = false;
+    setStatus('✔ Ofuscação concluída com sucesso!','ok');
+  }catch(e){
+    setStatus('✖ Erro: '+e.message,'err');
+  }
+});
+
+btnCopy.addEventListener('click',()=>{
+  navigator.clipboard.writeText(outputArea.value).then(()=>{
+    setStatus('✔ Copiado para a área de transferência!','ok');
+  });
+});
+
+btnDownload.addEventListener('click',()=>{
+  const blob = new Blob([outputArea.value],{type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'obfuscated.lua';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setStatus('✔ Arquivo baixado!','ok');
+});
+
+btnClear.addEventListener('click',()=>{
+  inputArea.value='';
+  outputArea.value='';
+  btnCopy.disabled=true;
+  btnDownload.disabled=true;
+  infoOut.textContent='—';
+  setStatus('Pronto','idle');
+  updateInfo();
+});
+</script>
+</body>
+</html>
