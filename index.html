@@ -43,6 +43,58 @@
   textarea:focus{background:#0c0c1e}
   #outputArea{color:#7dd3fc}
   footer{padding:10px 24px;background:#0f0f22;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted);text-align:center}
+/* Estilos do LoadString Generator */
+  .loadstring-container {
+    margin: 16px 24px;
+    background: #0f0f22;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .loadstring-content {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ls-label {
+    font-size: .85rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .ls-input-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .loadstring-content input[type="text"] {
+    flex: 1;
+    background: #0a0a1a;
+    color: #7dd3fc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: .85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .loadstring-content input[type="text"]:focus {
+    border-color: var(--purple);
+  }
+  .loadstring-content input[type="text"]::placeholder {
+    color: #2a2a4a;
+  }
+  .ls-status {
+    font-size: 0.8rem;
+    min-height: 16px;
+    font-weight: 500;
+  }
+  
+  @media(max-width:700px){
+    .loadstring-container { margin: 12px; }
+    .ls-input-group { flex-direction: column; gap: 8px; }
+  }
   @media(max-width:700px){
     .editors{flex-direction:column}
     .pane+.pane{border-left:none;border-top:2px solid var(--border)}
@@ -102,6 +154,32 @@
       <small id="infoOut">—</small>
     </div>
     <textarea id="outputArea" readonly placeholder="O script ofuscado aparecerá aqui..."></textarea>
+  </div>
+</div>
+
+<div class="loadstring-container">
+  <div class="pane-header">
+    <span>📎 LoadString Generator</span>
+  </div>
+  <div class="loadstring-content">
+    <label for="linkInput" class="ls-label">Link do Script (Pastebin, GitHub, Gist, etc.):</label>
+    <div class="ls-input-group">
+      <input type="text" id="linkInput" placeholder="Cole seu link aqui (ex: https://pastebin.com/LUJAuni2)" autocomplete="off">
+      <button class="btn btn-primary" id="btnGenerateLoadstring">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        Gerar LoadString
+      </button>
+    </div>
+    
+    <label for="loadstringOutput" class="ls-label">Resultado:</label>
+    <div class="ls-input-group">
+      <input type="text" id="loadstringOutput" readonly placeholder="A loadstring gerada aparecerá aqui...">
+      <button class="btn btn-secondary" id="btnCopyLoadstring" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar
+      </button>
+    </div>
+    <div id="loadstringStatus" class="ls-status"></div>
   </div>
 </div>
 
@@ -211,7 +289,96 @@ function deadCode(){
   ];
   return snippets[randInt(0,snippets.length-1)];
 }
+// ── LoadString Generator ───────────────────────────────────────────────────
+const linkInput = document.getElementById('linkInput');
+const loadstringOutput = document.getElementById('loadstringOutput');
+const btnGenerateLoadstring = document.getElementById('btnGenerateLoadstring');
+const btnCopyLoadstring = document.getElementById('btnCopyLoadstring');
+const loadstringStatus = document.getElementById('loadstringStatus');
 
+function setLsStatus(msg, color){
+  loadstringStatus.textContent = msg;
+  loadstringStatus.style.color = color;
+}
+
+function detectarTipoLink(urlStr){
+  try {
+    const url = new URL(urlStr);
+    let finalUrl = urlStr;
+
+    // Converte Pastebin para Raw
+    if (url.hostname.includes('pastebin.com')) {
+      if (!url.pathname.startsWith('/raw/')) {
+         const id = url.pathname.replace('/', '');
+         if (id) finalUrl = `https://pastebin.com/raw/${id}`;
+      }
+    }
+    // Converte GitHub Blob para Raw
+    else if (url.hostname.includes('github.com')) {
+      if (url.pathname.includes('/blob/')) {
+        finalUrl = urlStr.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+      }
+    }
+    // Converte Gist GitHub para Raw (Adiciona /raw ao final)
+    else if (url.hostname.includes('gist.github.com')) {
+       if (!url.pathname.endsWith('/raw')) {
+          finalUrl = urlStr + '/raw';
+       }
+    }
+
+    return finalUrl;
+  } catch (e) {
+    return null; // URL inválida
+  }
+}
+
+btnGenerateLoadstring.addEventListener('click', () => {
+  const val = linkInput.value.trim();
+  
+  if (!val) {
+    setLsStatus('⚠ Por favor, insira um link antes de gerar.', 'var(--error)');
+    return;
+  }
+
+  const rawUrl = detectarTipoLink(val);
+  
+  if (!rawUrl) {
+    setLsStatus('✖ URL inválida! Certifique-se de incluir http:// ou https://', 'var(--error)');
+    return;
+  }
+
+  const loadstringCode = `loadstring(game:HttpGet("${rawUrl}"))()`;
+  loadstringOutput.value = loadstringCode;
+  btnCopyLoadstring.disabled = false;
+  setLsStatus('✔ LoadString gerada com sucesso!', 'var(--success)');
+});
+
+btnCopyLoadstring.addEventListener('click', () => {
+  navigator.clipboard.writeText(loadstringOutput.value).then(() => {
+    setLsStatus('✔ LoadString copiada para a área de transferência!', 'var(--success)');
+    
+    // Efeito visual no botão (opcional)
+    const oldHtml = btnCopyLoadstring.innerHTML;
+    btnCopyLoadstring.innerHTML = "Copiado!";
+    setTimeout(() => { btnCopyLoadstring.innerHTML = oldHtml; }, 2000);
+  }).catch(err => {
+    setLsStatus('✖ Falha ao copiar: ' + err, 'var(--error)');
+  });
+});
+
+// Limpar o status e o output ao editar o link
+linkInput.addEventListener('input', () => {
+  loadstringOutput.value = '';
+  btnCopyLoadstring.disabled = true;
+  setLsStatus('', 'inherit');
+});
+
+// Limpar o status e o output ao editar o link
+linkInput.addEventListener('input', () => {
+  loadstringOutput.value = '';
+  btnCopyLoadstring.disabled = true;
+  setLsStatus('', 'inherit');
+});
 // ── Core Obfuscator ────────────────────────────────────────────────────────
 function obfuscate(src, level){
   _counter = 0;
